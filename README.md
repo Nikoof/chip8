@@ -6,7 +6,7 @@ Based on [this guide](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/) 
 ## Building
 
 ```
-$ git clone https://github.com/Nikoof/chip8
+$ git clone --recursive https://github.com/Nikoof/chip8
 $ cd chip8
 $ cargo build
 $ cargo run
