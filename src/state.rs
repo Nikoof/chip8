@@ -68,26 +68,22 @@ impl State {
         Ok(())
     }
 
-    pub fn update(&mut self) -> Result<()> {
-        self.update_keys()?;
+    pub fn tick(&mut self) -> Result<()> {
         let instruction = self.next_instruction()?;
         self.execute_instruction(instruction);
         Ok(())
     }
-
-    pub fn get_points(&self) -> Vec<(f64, f64)> {
-        let mut coords: Vec<(f64, f64)> = Vec::new();
-        for row in 0..32 {
-            for col in 0..64 {
-                if self.display[row][col] {
-                    coords.push((col as f64, (32 - row) as f64));
-                }
-            }
+    
+    pub fn update_timers(&mut self) {
+        if self.delay > 0 {
+            self.delay -= 1;
         }
-        coords
+        if self.sound > 0 {
+            self.sound -= 1;
+        }
     }
 
-    fn update_keys(&mut self) -> Result<()> {
+    pub fn update_keys(&mut self) -> Result<()> {
         if event::poll(Duration::from_secs(0))? {
             if let Event::Key(key) = event::read()? {
                 match key.code {
@@ -289,5 +285,17 @@ impl State {
                 }
             }
         }
+    }
+
+    pub fn get_points(&self) -> Vec<(f64, f64)> {
+        let mut coords: Vec<(f64, f64)> = Vec::new();
+        for row in 0..32 {
+            for col in 0..64 {
+                if self.display[row][col] {
+                    coords.push((col as f64, (32 - row) as f64));
+                }
+            }
+        }
+        coords
     }
 }
