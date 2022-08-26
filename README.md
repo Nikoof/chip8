@@ -1,6 +1,6 @@
 # chip8
 
-CHIP-8 interpreter I am writing to learn Rust.
+TUI CHIP-8 interpreter I am writing to learn Rust.
 Based on [this guide](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/) by Tobias Langhoff.
 
 ## Building
