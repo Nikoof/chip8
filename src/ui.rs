@@ -2,7 +2,7 @@ use tui::{
     backend::Backend,
     layout::{Constraint, Direction, Layout},
     widgets::{Block, Borders},
-    widgets::canvas::{Canvas, Points, Painter},
+    widgets::canvas::{Canvas, Points},
     style::Color
 };
 
