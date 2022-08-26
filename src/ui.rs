@@ -2,11 +2,10 @@ use tui::{
     backend::Backend,
     layout::{Constraint, Direction, Layout},
     widgets::{Block, Borders},
-    widgets::canvas::{Canvas, Points},
-    style::Color
+    widgets::canvas::{Canvas, Points}, symbols,
 };
 
-pub fn ui<B: Backend>(f: &mut tui::Frame<B>) {
+pub fn ui<B: Backend>(f: &mut tui::Frame<B>, points: Points) {
     let root_layout = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
@@ -17,9 +16,9 @@ pub fn ui<B: Backend>(f: &mut tui::Frame<B>) {
     let top_layout = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([
-            Constraint::Percentage(15),
-            Constraint::Percentage(70),
-            Constraint::Percentage(15)
+            Constraint::Percentage(20),
+            Constraint::Percentage(60),
+            Constraint::Percentage(20)
         ].as_ref())
         .split(root_layout[0]);
     let memview = Block::default()
@@ -34,17 +33,13 @@ pub fn ui<B: Backend>(f: &mut tui::Frame<B>) {
     let log = Block::default()
         .title("Log")
         .borders(Borders::ALL);
-    
+
     let canvas = Canvas::default()
         .block(display)
         .x_bounds([0.0, 64.0])
         .y_bounds([0.0, 32.0])
-        .paint(|ctx| {
-            ctx.draw(&Points {
-                coords: [(0.0, 0.0), (64.0, 32.0)].as_ref(),
-                color: Color::White
-            });
-        });
+        .marker(symbols::Marker::Block)
+        .paint(|ctx| { ctx.draw(&points); });
 
     f.render_widget(memview, top_layout[0]);
     f.render_widget(canvas, top_layout[1]);
