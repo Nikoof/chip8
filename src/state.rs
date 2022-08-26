@@ -1,9 +1,12 @@
 use std::{
     fs::File,
-    io::Read, path::Path
+    io::Read,
+    path::Path,
+    time::Duration
 };
-use anyhow::{anyhow, Result};
+use crossterm::event::{self, Event, KeyCode};
 use rand::random;
+use anyhow::{anyhow, Result};
 
 use crate::instruction::{Instruction, decode};
 
@@ -15,7 +18,8 @@ pub struct State {
     index: usize,
     delay: u8,
     sound: u8,
-    variable: [u8; 16]
+    variable: [u8; 16],
+    pub keys: [bool; 16]
 }
 
 impl Default for State {
@@ -47,7 +51,8 @@ impl Default for State {
             index: 0,
             delay: 0,
             sound: 0,
-            variable: [0u8; 16]
+            variable: [0u8; 16],
+            keys: [false; 16]
         }
     }
 }
@@ -64,6 +69,7 @@ impl State {
     }
 
     pub fn update(&mut self) -> Result<()> {
+        self.update_keys()?;
         let instruction = self.next_instruction()?;
         self.execute_instruction(instruction);
         Ok(())
@@ -79,6 +85,36 @@ impl State {
             }
         }
         coords
+    }
+
+    fn update_keys(&mut self) -> Result<()> {
+        if event::poll(Duration::from_secs(0))? {
+            if let Event::Key(key) = event::read()? {
+                match key.code {
+                    KeyCode::Char('1') => self.keys[0x1] = true,
+                    KeyCode::Char('2') => self.keys[0x2] = true,
+                    KeyCode::Char('3') => self.keys[0x3] = true,
+                    KeyCode::Char('4') => self.keys[0xC] = true,
+
+                    KeyCode::Char('q') => self.keys[0x4] = true,
+                    KeyCode::Char('w') => self.keys[0x5] = true,
+                    KeyCode::Char('e') => self.keys[0x6] = true,
+                    KeyCode::Char('r') => self.keys[0xD] = true,
+
+                    KeyCode::Char('a') => self.keys[0x7] = true,
+                    KeyCode::Char('s') => self.keys[0x8] = true,
+                    KeyCode::Char('d') => self.keys[0x9] = true,
+                    KeyCode::Char('f') => self.keys[0xE] = true,
+
+                    KeyCode::Char('z') => self.keys[0xA] = true,
+                    KeyCode::Char('x') => self.keys[0x0] = true,
+                    KeyCode::Char('c') => self.keys[0xB] = true,
+                    KeyCode::Char('v') => self.keys[0xF] = true,
+                    _ => {}
+                }
+            }
+        }
+        Ok(())
     }
 
     fn next_instruction(&mut self) -> Result<Instruction> {
@@ -196,10 +232,16 @@ impl State {
                 }
             },
             Instruction::SkipIfPressed(x) => {
-
+                let char = self.variable[x] & 0x0F;
+                if self.keys[char as usize] {
+                    self.pc += 2;
+                }
             },
             Instruction::SkipIfNotPressed(x) => {
-
+                let char = self.variable[x] & 0x0F;
+                if !self.keys[char as usize] {
+                    self.pc += 2;
+                }
             },
             Instruction::GetDelay(x) => {
                 self.variable[x] = self.delay;
@@ -218,7 +260,11 @@ impl State {
                 self.index = result; // & 0x1000 ???
             },
             Instruction::GetKey(x) => {
-
+                if let Some(index) = self.keys.iter().position(|&pressed| pressed) {
+                    self.variable[x] = index as u8;
+                } else {
+                    self.pc -= 2;
+                }
             },
             Instruction::IndexFont(x) => {
                 const FONT_ADDR: usize = 0x50;

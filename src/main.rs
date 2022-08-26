@@ -28,6 +28,7 @@ fn main() -> Result<()> {
 
     loop {
         state.update()?;
+
         let coords = state.get_points();
         let points = Points {
             coords: &coords,
@@ -38,9 +39,8 @@ fn main() -> Result<()> {
         if let Ok(event_available) = event::poll(std::time::Duration::from_secs(0)) {
             if event_available {
                 if let Event::Key(key) = event::read()? {
-                    match key.code {
-                        KeyCode::Char('q') => break,
-                        _ => {}
+                    if let KeyCode::Esc = key.code {
+                        break
                     }
                 }
             }
